@@ -1,21 +1,23 @@
-import os
 import json
+import os
 import time
+from collections import Counter
+
 import requests
+from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from langdetect import detect_langs, DetectorFactory
-from bs4 import BeautifulSoup
-from collections import Counter
+
+import config
 
 DetectorFactory.seed = 0
 
-INPUT_FILE = os.path.join("data", "language_identified.json")
-OUTPUT_FILE = os.path.join("data", "language_identified_genius.json")
+INPUT_FILE = config.LANGUAGE_IDENTIFIED
+OUTPUT_FILE = config.LANGUAGE_IDENTIFIED_GENIUS
 
 load_dotenv()
 GENIUS_TOKEN = os.getenv("GENIUS_ACCESS_TOKEN")
 HEADERS = {"Authorization": f"Bearer {GENIUS_TOKEN}"}
-GENIUS_SEARCH_URL = "https://api.genius.com/search"
 
 def genius_search(song_name, artist_name):
     query = f"{song_name} {artist_name}"
@@ -23,7 +25,7 @@ def genius_search(song_name, artist_name):
     retries = 0
     while retries < 5:
         try:
-            resp = requests.get(GENIUS_SEARCH_URL, headers=HEADERS, params=params, timeout=10)
+            resp = requests.get(config.GENIUS_SEARCH_URL, headers=HEADERS, params=params, timeout=10)
             if resp.status_code == 200:
                 hits = resp.json().get("response", {}).get("hits", [])
                 if not hits:

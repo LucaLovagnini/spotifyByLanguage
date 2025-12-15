@@ -1,11 +1,14 @@
-import os
 import json
+import os
 import sys
 import time
-from dotenv import load_dotenv
+
 import spotipy
-from spotipy.oauth2 import SpotifyOAuth
+from dotenv import load_dotenv
 from spotipy.exceptions import SpotifyException
+from spotipy.oauth2 import SpotifyOAuth
+
+import config
 
 load_dotenv()
 SPOTIPY_CLIENT_ID = os.getenv("SPOTIPY_CLIENT_ID")
@@ -22,7 +25,7 @@ def get_spotify_client():
         client_id=SPOTIPY_CLIENT_ID,
         client_secret=SPOTIPY_CLIENT_SECRET,
         redirect_uri=SPOTIPY_REDIRECT_URI,
-        scope=SCOPE
+        scope=config.SPOTIFY_PLAYLIST_SCOPE
     ))
 
 # -----------------------------

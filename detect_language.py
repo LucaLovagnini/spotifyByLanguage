@@ -1,18 +1,19 @@
-import os
 import json
+import os
 from collections import Counter, defaultdict
+
 from langdetect import detect_langs, DetectorFactory
+
+import config
 
 DetectorFactory.seed = 0
 
-INPUT_FILE = os.path.join("data", "spotify_tracks_tagged.json")
-OUTPUT_FILE = os.path.join("data", "language_identified.json")
-COMBINED_CONF_THRESHOLD = 0.80
-MIN_TEXT_LEN_FOR_DETECTION = 3
-WEIGHTS = {"name": 0.5, "artist": 0.3, "album": 0.2}
+INPUT_FILE = config.SPOTIFY_TRACKS
+OUTPUT_FILE = config.LANGUAGE_IDENTIFIED
+WEIGHTS = config.FIELD_WEIGHTS
 
 def safe_top_lang(text):
-    if not text or len(text.strip()) < MIN_TEXT_LEN_FOR_DETECTION:
+    if not text or len(text.strip()) < config.MIN_TEXT_LEN:
         return "unknown", 0.0
     try:
         langs = detect_langs(text)
@@ -39,7 +40,7 @@ def detect_track_language(track):
         return "unknown", 0.0, per_field
 
     best_lang, best_score = max(scores.items(), key=lambda kv: kv[1])
-    return (best_lang, best_score, per_field) if best_score >= COMBINED_CONF_THRESHOLD else ("unknown", best_score, per_field)
+    return (best_lang, best_score, per_field) if best_score >= config.LANGUAGE_CONF_THRESHOLD else ("unknown", best_score, per_field)
 
 def detect_languages(input_file=INPUT_FILE, output_file=OUTPUT_FILE):
     with open(input_file, "r", encoding="utf-8") as f:

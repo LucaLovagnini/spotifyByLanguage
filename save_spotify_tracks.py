@@ -1,11 +1,13 @@
-import os
 import json
-from dotenv import load_dotenv
+import os
+
 import spotipy
+from dotenv import load_dotenv
 from spotipy.oauth2 import SpotifyOAuth
 
-OUTPUT_FILE = os.path.join("data", "spotify_tracks.json")
-FLUSH_INTERVAL = 50
+import config
+
+OUTPUT_FILE = config.SPOTIFY_TRACKS
 
 def fetch_saved_tracks():
     load_dotenv()
@@ -32,7 +34,7 @@ def fetch_saved_tracks():
                 "album": track["album"]["name"]
             })
 
-            if idx % FLUSH_INTERVAL == 0:
+            if idx % config.FLUSH_INTERVAL == 0:
                 os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
                 with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
                     json.dump(all_tracks, f, ensure_ascii=False, indent=2)

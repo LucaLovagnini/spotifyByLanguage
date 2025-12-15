@@ -1,8 +1,11 @@
-import os
 import json
-from dotenv import load_dotenv
+import os
+
 import spotipy
+from dotenv import load_dotenv
 from spotipy.oauth2 import SpotifyOAuth
+
+import config
 
 # -----------------------------
 # Spotify Setup
@@ -14,6 +17,7 @@ SPOTIPY_REDIRECT_URI = os.getenv("SPOTIPY_REDIRECT_URI")
 
 SCOPE = "user-library-read"
 
+
 def get_spotify_client():
     return spotipy.Spotify(auth_manager=SpotifyOAuth(
         client_id=SPOTIPY_CLIENT_ID,
@@ -22,12 +26,13 @@ def get_spotify_client():
         scope=SCOPE
     ))
 
+
 # -----------------------------
 # Config
 # -----------------------------
 INPUT_FILE = os.path.join("data", "spotify_tracks.json")
 OUTPUT_FILE = os.path.join("data", "spotify_tracks_tagged.json")
-INSTRUMENTAL_THRESHOLD = 0.9  # >0.9 → instrumental
+
 
 # -----------------------------
 # Main Logic
@@ -46,7 +51,7 @@ def tag_instrumentals(input_file=INPUT_FILE, output_file=OUTPUT_FILE):
             if features is None:
                 raise Exception("Audio features not available")
             track["instrumentalness"] = features.get("instrumentalness", 0.0)
-            track["is_instrumental"] = track["instrumentalness"] >= INSTRUMENTAL_THRESHOLD
+            track["is_instrumental"] = track["instrumentalness"] >= config.INSTRUMENTAL_THRESHOLD
         except Exception as e:
             print(f"⚠️ Skipping track {track['id']}: {e}")
             track["instrumentalness"] = 0.0
@@ -68,6 +73,7 @@ def tag_instrumentals(input_file=INPUT_FILE, output_file=OUTPUT_FILE):
 
     print(f"Output saved to {output_file}, skipped tracks log saved to {log_file}")
     return output_file  # for orchestrator usage
+
 
 # -----------------------------
 # CLI / Standalone Run

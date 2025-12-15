@@ -1,7 +1,9 @@
 import json
-from collections import Counter
 import sys
+from collections import Counter
+
 import pycountry
+
 
 def code_to_language(lang_code):
     """Convert ISO 639-1 code to full language name, fallback to code if unknown."""

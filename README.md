@@ -49,11 +49,11 @@ Automatically organize your Spotify saved tracks into language-specific playlist
    cp .env.example .env
    ```
    Edit `.env` and add your API credentials:
-   ```bash
+   ```
     # Spotify API credentials
     SPOTIPY_CLIENT_ID=your_spotify_client_id_here
     SPOTIPY_CLIENT_SECRET=your_spotify_client_secret_here
-    SPOTIPY_REDIRECT_URI=http://localhost:8080/callback
+    SPOTIPY_REDIRECT_URI=http://127.0.0.1:7777/callback
     
     # Genius API (optional)
     GENIUS_ACCESS_TOKEN=your_genius_token_here
@@ -65,24 +65,30 @@ Automatically organize your Spotify saved tracks into language-specific playlist
 1. Go to [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
 2. Create a new app
 3. Note down your `Client ID` and `Client Secret`
-4. Add `http://localhost:8080/callback` to Redirect URIs
+4. Add `http://127.0.0.1:7777/callback` to Redirect URIs
+5. Under Which API/SDKs are you planning to use? select Web Api
 
 ### Genius API
 1. Go to [Genius API](https://genius.com/api-clients)
 2. Create a new API client
-3. Generate an access token
+3. For App Website URL use https://localhost
+4. Generate an access token
 
 ## 🎯 Usage
 
 ### Quick Start
 
-`bash python orchestratory.py en,es,fr`
+```bash
+python orchestratory.py en,es,fr
+```
 
 This creates playlists for English, Spanish, and French songs.
 
 ### Advanced Usage
 
-`bash python orchestratory.py en,es,fr,de,it 15`
+````bash 
+python orchestratory.py en,es,fr,de,it 15
+````
 
 Creates playlists for 5 languages, requiring at least 15 songs per playlist.
 
@@ -105,7 +111,7 @@ python create_playlist.py data/language_identified_genius.json en,es,fr
 
 ## 📊 Language Detection Algorithm
 
-## 📋 Supported Languages
+### 📋 Supported Languages
 The system supports all languages detected by the `langdetect` library, including:
 - **en** — English
 - **es** — Spanish
@@ -119,17 +125,27 @@ The system supports all languages detected by the `langdetect` library, includin
 - **zh** — Chinese
 - And many more...
 
+### 🚩Known Limitations
+
+- **Instrumental tracks** (i.e., tracks without lyrics) are currently classified as `unknown`. Support for explicit 
+instrumental detection is planned via the `tag_instrumentals` step in a future release.
+
+- **Metadata-based language detection may be inaccurate.** The initial classification step runs `langdetect` on a 
+combination of track title, artist name, and album name. This can lead to incorrect results when the title language 
+differs from the lyric language (e.g., *Madonna – La Isla Bonita* is classified as `es` based on the title, 
+even though the lyrics are primarily in English).
+
 ## ⚙️ Configuration
 ### Language Detection Settings
-You can modify these in : `detect_language.py`
-- : Minimum confidence (default: 0.80) `COMBINED_CONF_THRESHOLD`
-- : Field importance weights `WEIGHTS`
-- : Minimum text length `MIN_TEXT_LEN_FOR_DETECTION`
+You can modify these in : `config.py`
+- Minimum confidence (default: 0.80) `LANGUAGE_CONF_THRESHOLD`
+- Field importance weights `WEIGHTS`
+- Minimum text length `MIN_TEXT_LEN`
 
 ### Rate Limiting
 Built-in rate limiting with exponential backoff:
-- Spotify: 1-second delays between requests
-- Genius: Progressive delays on rate limits
+- Spotify: 50 songs fetched per request
+- Genius: 1-second between requests, with progressive delays on rate limits
 
 ## 🔍 Troubleshooting
 ### Common Issues
@@ -142,8 +158,8 @@ pip install -r requirements.txt
 - Ensure redirect URI matches exactly
 
 **"Rate limit exceeded"**
-- The script handles this automatically with retries
-- For Genius, consider adding delays or using fewer tracks
+- For Genius, the script handles this automatically with retries and exponential backoff
+- For Spotify, reduce the number of fetched songs per request through `FLUSH_INTERVAL`
 
 **"Permission denied" for playlists**
 - Ensure your Spotify app has the correct scopes
